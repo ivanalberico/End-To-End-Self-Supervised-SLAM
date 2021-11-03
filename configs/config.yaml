@@ -1,0 +1,105 @@
+SETTINGS: 
+  name: Training_1  # name of the current training/testing run
+  num_workers: 8  # number of CUDA workers
+  device: cuda  # cuda or cpu, depending on availability
+  log_path:
+DATA:
+  name: ICL  # ICL or TUM, dataset used in the current run
+  data_path: C:\Users\akbar\PycharmProjects\End-To-End-Self-Supervised-SLAM\data\  # path to where dataset is stored
+  width: 320  # width of single image in pixels
+  height: 256  # height of single image in pixels
+  rgbd: True
+  min_depth: 0.1  # minimum depth constraint for current run's sequence
+  max_depth: 80.0  # maximum depth constraint for current run's sequence
+  split:  # I DON'T KNOW
+  scales: [0]  # frame from which to estimate scale (CHECK THIS!)
+  frames: [0, -1] # [0, -1], [0, 1], or [0, -1, 1] ORDER MATTERS.
+  normalize_intrinsics: False
+  dilation: 2   #  number of (original trajectory’s) frames to skip between two consecutive frames in the extracted sequence. Default: None
+  stride: 2    # number of frames between the first frames of two consecutive extracted sequences. Default: None
+  start: 418   # index of the frame from which to start extracting sequences for every trajectory. If None, will start from the first frame. Default: None
+  use_gt_pose: True
+MODEL:
+  depth_network: indoor  # either indoor or monodepth2, which network to use
+  num_layers: 18  # for ResNet network, default is 18
+  weights_init_encoder: False  # type "imagenet" to load imagenet weights.
+  use_pretrained_models: True  # set to True for pretrained depth network
+  pretrained_models_list: ["depth_encoder", "depth_decoder"]  # does not need to be changed
+  load_depth_path: C:\Users\akbar\PycharmProjects\End-To-End-Self-Supervised-SLAM\extras\indoor # load path for pretrained network
+  slam: PointFusion  # either PointFusion or ICPSLAM
+  odom: gradicp    # gt, icp, or gradicp
+  dist_th: 0.05    # PointFusion hyperparameter, default: 0.05
+  angle_th: 20     # PointFusion hyperparameter, default: 20
+  sigma: 0.6       # PointFusion hyperparameter, default 0.6
+  numiters: 20     # number of iterations, default 20
+  padding_mode: border  # zeros, or border
+  refinement_mode: True  # incorporate refinement or not
+LOSS:  # losses can be turned on and off via boolean flags individually
+  chamfer_distance: False  # chamfer distance loss, including corresponding weight
+  chamfer_weight: 0.25
+  knn_points: False  # KNN-points loss, including corresponding weight
+  knn_points_weight: 0.25
+  auto_masking: False  # auto-masking loss
+  min_reprojection: False  # minimum reprojection loss
+  photometric_mask: True  # photometric mask loss
+  geometric: False  # geometric consistency loss, including corresponding weight
+  geometric_weight: 0.5
+  smoothness: False  # smoothness loss, including corresponding weight
+  smoothness_weight: 1.e-3
+  depth_regularizer: False  
+  depth_regularizer_weight: 1.e-2
+  depth_regularizer_type: l2  # l1 or l2
+  supervise_depth: False  # weak supervision for depth estimation
+  sampling_type: random  # do not change
+  sampling_prob: 0.012 # % of pixels to keep in the depth map from ground-truth
+  gt_depth_weight: 1  
+  three3d_loss: True  # three-3D loss, including corresponding weight
+  three3d_loss_weight: 1.0
+  tum_depth_masking: True  # mask out non-available ground-truth depth in TUM
+OPTIMIZATION:
+  batch_size: 1
+  epochs: 50
+  refinement: PFT  # PFT or OFT
+  refinement_steps: 25
+  learning_rate: 1.e-5
+  optimizer: Adam  # Adam, SGD, or SparseAdam
+  load_optimizer: False   # uses same path as load_depth_path, just use this to set state
+  schedular: StepLR  # StepLR or MultiStepLR
+  schedular_step_size: 100   # for StepLR
+  schedular_milestones: [100, 200]  # for MultiStepLR
+  schedular_gamma: 0.5  # decay factor for LR
+DEPTH_RECOVER:  # parameters for gradient experiments
+  noise_depth: True  # apply noise to depth image
+  noise_color: True  # apply noise to color image
+  remove_pixels_depth: False  # mask pixels in the depth image
+  remove_pixels_color: False  # mask pixels in the color image
+  mask_height: 50  # height of pixel mask
+  mask_width: 50  # width of pixel mask
+  replace_depth: False  # replace the depth image by a constant
+  replace_color: False  # replace the color image by a constant
+  optimize_depth: True  
+  optimize_color: True  
+ABLATION:
+  scale_intrinsics: False  
+  focal_pretrain: 285.8  
+  scaled_depth: True  # median scaling of depth
+  scaling_depth: 6.9  # value for median scaling
+  dual_disparity: True  
+EVALUATION:
+  Add_Args:
+VIZ:
+  plot_first_step: False  # strictly plots at step == 0
+  plot_gt: False  # plots GT at the final step
+  plot_final_step: True  # plots predictions at final step
+  tensorboard: False  # gradient visualizations using tensorboard
+  tensorboard_scaled: False  # scale gradient images in tensorboard
+DEBUG:  # only for debugging purposes
+  early_stop: True  # stop before running through all refinement steps
+  iter_stop: 0  # iteration, at which to stop
+  plot_path: C:\Users\akbar\PycharmProjects\End-To-End-Self-Supervised-SLAM\debug\latest_results  # path to where plots should be stored
+  plot: False  
+  print_metrics: True  # print refinement metrics to the console after each refinement step
+DEMO:  # just for the live demo of the final presentation
+  sequence_length: 60            
+  frame_threshold: 0.03  # has to change according to the dataset [ 0.03 for ICL, 0.12 for TUM ]
+  sequence_length_refinement: 2
